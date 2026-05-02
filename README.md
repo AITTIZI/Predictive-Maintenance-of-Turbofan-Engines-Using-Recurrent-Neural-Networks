@@ -1,217 +1,211 @@
-````md
-# Aircraft Engine Failure Prediction using RNN, BiRNN, and LSTM (NASA C-MAPSS)
+````md id="m7k2pa"
+# Aircraft Engine Predictive Maintenance with RNN & LSTM (NASA C-MAPSS)
 
 ## Overview
 
-This repository contains the complete implementation of a comparative deep learning study for **early aircraft engine failure prediction** using recurrent neural networks on the **NASA C-MAPSS** benchmark dataset.
+This repository contains a Jupyter Notebook implementation for **predictive maintenance** using deep learning on the **NASA C-MAPSS turbofan engine dataset**.
 
-The objective is to detect whether an aircraft engine will enter a **failure-critical state** within a predefined future warning horizon using historical multivariate sensor data.
+The project focuses on predicting whether an engine is close to failure using historical sensor signals and operating conditions.
 
-This project compares four sequence learning architectures:
+The notebook demonstrates how to build and compare:
 
-- Single-Feature Vanilla RNN  
-- Multi-Feature Stacked RNN  
-- Multi-Feature Bidirectional RNN (BiRNN)  
-- Stacked Long Short-Term Memory (LSTM)
+- Simple RNN
+- Stacked RNN
+- LSTM Networks
 
-The study shows that **LSTM achieved the best predictive performance**, confirming its strength in learning long-term degradation behavior from time-series sensor data.
+for **binary engine failure prediction**.
+
+---
+
+## Problem Statement
+
+Aircraft engines gradually degrade over time.
+
+The goal is:
+
+> Given past sensor readings, predict if the engine will fail within the next fixed number of cycles.
+
+This helps airlines perform maintenance **before breakdown happens**.
+
+Why? Because early detection saves:
+
+- Money
+- Downtime
+- Repair costs
+- Safety risks
 
 ---
 
 ## Dataset
 
-**Dataset:** NASA Commercial Modular Aero-Propulsion System Simulation (**C-MAPSS**)
+**NASA C-MAPSS (Commercial Modular Aero-Propulsion System Simulation)**
 
-The dataset contains simulated run-to-failure trajectories of turbofan engines under different operating conditions and fault modes.
+The dataset contains multiple simulated aircraft engines run until failure.
 
-Each engine unit includes:
+Each engine includes:
 
-- 3 operational setting variables
+- Engine ID
+- Cycle number
+- 3 operational settings
 - 21 sensor measurements
-- cycle-by-cycle degradation progression
 
 ---
 
-## Problem Formulation
+## Target Creation
 
-We formulate the task as a **binary classification problem**:
+This notebook converts Remaining Useful Life (RUL) into a binary label.
 
-Given the last `Ts = 50` operating cycles, predict whether the engine will fail within the next:
+Example:
 
-```text
-w1 = 30 cycles
+```text id="1d2fga"
+If RUL <= 30 cycles  -> 1 (Failure Soon)
+If RUL > 30 cycles   -> 0 (Healthy)
 ````
 
-Output label:
-
-* `1` = Failure approaching soon
-* `0` = Normal condition
+This turns the task into a classification problem.
 
 ---
 
-## Models Compared
+## Workflow
 
-### 1. Single-Feature Vanilla RNN
+## 1. Data Loading
 
-Uses one selected sensor only.
+Training, testing, and truth datasets are loaded:
 
-### 2. Multi-Feature Stacked RNN
-
-Uses all sensor channels with deeper recurrent layers.
-
-### 3. Bidirectional RNN (BiRNN)
-
-Learns forward and backward temporal dependencies.
-
-### 4. Stacked LSTM
-
-Uses gating mechanisms to retain useful long-term information.
+```python id="8m2lqe"
+PM_train.txt
+PM_test.txt
+PM_truth.txt
+```
 
 ---
 
-## Final Results
+## 2. Data Preprocessing
 
-| Model      | Accuracy  | Precision | Recall    | F1 Score  |
-| ---------- | --------- | --------- | --------- | --------- |
-| Single RNN | 72.0%     | --        | --        | 51.1%     |
-| Multi RNN  | 82.0%     | --        | --        | 67.3%     |
-| BiRNN      | 84.9%     | --        | --        | 81.2%     |
-| LSTM       | **93.7%** | **94.4%** | **87.0%** | **90.6%** |
+Includes:
+
+* Removing empty columns
+* Naming features
+* Sorting by engine ID and cycle
+* Calculating RUL
+* Normalization / scaling
 
 ---
 
-## Key Finding
+## 3. Sequence Generation
 
-LSTM significantly outperformed standard RNN models.
+Sliding windows are created from time-series data.
 
-Why? Because:
+Example:
 
-* Vanilla RNN struggles with long memory
-* Engine degradation happens slowly over many cycles
-* LSTM remembers useful signals and forgets noise
+```text id="q1m6sw"
+Past 50 cycles -> Predict failure risk
+```
 
-Aha! This is why programmers love LSTM for time-series forecasting.
+Why? Because neural networks need sequences.
+
+---
+
+## 4. Deep Learning Models
+
+### Vanilla RNN
+
+Basic recurrent memory model.
+
+### Stacked RNN
+
+Multiple recurrent layers for stronger pattern learning.
+
+### LSTM
+
+Uses gates to remember useful long-term information.
+
+Aha! This is why programmers love LSTM.
+
+---
+
+## Technologies Used
+
+* Python
+* TensorFlow / Keras
+* NumPy
+* Pandas
+* Matplotlib
+* Seaborn
+* Scikit-learn
+
+---
+
+## Run Notebook
+
+Install dependencies:
+
+```bash id="ovv4is"
+pip install tensorflow pandas numpy matplotlib seaborn scikit-learn jupyter
+```
+
+Launch notebook:
+
+```bash id="g6ndx1"
+jupyter notebook
+```
+
+Open:
+
+```text id="j5blfi"
+mmain.ipynb
+```
+
+---
+
+## Expected Outputs
+
+* Model training accuracy
+* Validation loss
+* Confusion matrix
+* Precision / Recall
+* Failure classification results
 
 ---
 
 ## Repository Structure
 
-```text
+```text id="v44g3q"
+├── mmain.ipynb
 ├── data/
-│   └── CMAPSSData/
-├── notebooks/
-│   └── exploration.ipynb
-├── src/
-│   ├── preprocess.py
-│   ├── windows.py
-│   ├── train.py
-│   ├── evaluate.py
-│   └── models/
-│       ├── rnn.py
-│       ├── birnn.py
-│       └── lstm.py
-├── results/
-│   ├── metrics.csv
-│   └── plots/
-├── requirements.txt
-└── README.md
+│   ├── PM_train.txt
+│   ├── PM_test.txt
+│   └── PM_truth.txt
+├── README.md
+└── requirements.txt
 ```
 
 ---
 
-## Installation
+## Example Insight
 
-```bash
-git clone https://github.com/yourusername/engine-failure-rnn.git
-cd engine-failure-rnn
-pip install -r requirements.txt
-```
+If sensor temperature, vibration, or pressure starts drifting over many cycles:
 
----
+* RNN may forget older signals
+* LSTM can remember long degradation trends
 
-## Run Training
-
-```bash
-python src/train.py --model lstm
-```
-
-Other choices:
-
-```bash
---model rnn
---model stacked_rnn
---model birnn
-```
-
----
-
-## Example (PyTorch)
-
-```python
-model = LSTMClassifier(
-    input_size=24,
-    hidden_size=64,
-    num_layers=2
-)
-```
-
----
-
-## Visual Outputs
-
-* Training vs validation loss
-* ROC curve
-* Precision-recall curve
-* Confusion matrix
-* Remaining Useful Life trend plots
-
----
-
-## Applications
-
-* Predictive maintenance
-* Fleet health monitoring
-* Aircraft safety systems
-* Industrial rotating machines
-* Turbine monitoring
+That is why LSTM often performs better.
 
 ---
 
 ## Future Improvements
 
-* Attention-LSTM
+* Bidirectional LSTM
+* Attention mechanism
 * Transformer models
 * Remaining Useful Life regression
-* Explainable AI (SHAP / GradCAM)
-* Real-time deployment
+* Explainable AI (SHAP)
 
 ---
 
-## Citation
+## Author
 
-If you use this repository, please cite:
-
-```bibtex
-@article{engine_rnn_failure,
-  title={Early Aircraft Engine Failure Prediction using Recurrent Neural Networks},
-  author={Your Name},
-  year={2026}
-}
-```
+Youssef Aittizi
 
 ---
 
-## Contact
-
-For collaboration or research discussion:
-
-GitHub: `yourusername`
-
----
-
-## License
-
-MIT License
-
-```
-```
